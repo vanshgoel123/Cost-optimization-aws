@@ -13,10 +13,7 @@ This repository contains **two AWS Lambda functions** that help you automaticall
 - [Functions Included](#functions-included)  
 - [Prerequisites](#prerequisites)  
 - [Deployment](#deployment)  
-- [IAM Permissions](#iam-permissions)  
-- [Contributing](#-contributing)  
-- [License](#license)  
-- [Author](#author)  
+- [IAM Permissions](#iam-permissions)   
 
 ---
 
