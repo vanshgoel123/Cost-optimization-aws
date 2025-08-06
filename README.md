@@ -1,41 +1,99 @@
-# 🧹 AWS Lambda Script to Delete Unused EBS Snapshots
+# 💸 AWS EBS Snapshot Cleanup Automation
 
-This AWS Lambda function identifies and deletes unused or orphaned EBS snapshots in your AWS account to help reduce storage costs.
+This repository contains **two AWS Lambda functions** that help you automatically delete unused or old Amazon EBS snapshots to **optimize AWS costs**. It ensures your environment stays clean by removing snapshots that are either:
+
+- Too old (based on a defined retention period)
+- Not associated with any active volume or instance
 
 ---
 
-## 📌 What It Does
+## 📂 Table of Contents
 
-- Lists all **running EC2 instances**
-- Fetches all **EBS snapshots** owned by you
+- [Features](#features)  
+- [Functions Included](#functions-included)  
+- [Prerequisites](#prerequisites)  
+- [Deployment](#deployment)  
+- [IAM Permissions](#iam-permissions)  
+- [Contributing](#-contributing)  
+- [License](#license)  
+- [Author](#author)  
+
+---
+
+## ✨ Features
+
+✅ Automatically deletes unnecessary EBS snapshots  
+✅ Two cleanup modes: by **volume attachment** or by **snapshot age**  
+✅ Cost-effective solution for EBS snapshot management  
+✅ Written in Python using AWS SDK (`boto3`)  
+✅ Safe with built-in error handling and logging  
+✅ Easily schedulable via CloudWatch Events or EventBridge  
+
+---
+
+## 🛠️ Functions Included
+
+### 1. `ebs_snapshot_cleanup_by_volume.py`
+
+🔍 **Logic:**
+- Identifies all currently running EC2 instances
+- Checks each EBS snapshot owned by your AWS account
 - Deletes snapshots that:
-  - Are **not linked** to any volume
-  - Are linked to a **volume that is not attached**
-  - Are linked to a volume attached to an **EC2 instance that is not running**
-  - Are linked to a volume that **no longer exists**
+  - Are not attached to any volume  
+  - Belong to volumes not attached to any EC2 instance  
+  - Are from volumes not attached to running instances  
+  - Are linked to volumes that no longer exist  
+
+📌 **Use Case:**  
+Ideal for dynamic infrastructure environments where cleanup is based on resource usage.
+
+---
+
+### 2. `ebs_snapshot_cleanup_by_time.py`
+
+🔍 **Logic:**
+- Scans all EBS snapshots owned by your account
+- Deletes those **older than a specified number of days (e.g., 30)**
+
+📌 **Use Case:**  
+Best for organizations with fixed snapshot retention policies (e.g., 7, 30, or 90 days).
+
+---
+
+## ⚙️ Prerequisites
+
+- AWS Account with Lambda permissions
+- Python 3.8+ runtime for Lambda
+- IAM role with required EC2 and snapshot permissions
 
 ---
 
 ## 🚀 Deployment
 
-### Prerequisites:
-- AWS Lambda with an IAM role that has permissions:
-  - `ec2:DescribeInstances`
-  - `ec2:DescribeSnapshots`
-  - `ec2:DescribeVolumes`
-  - `ec2:DeleteSnapshot`
-
-### How to Deploy:
-1. Go to AWS Lambda Console.
-2. Create a new Lambda function (choose Python 3.x as runtime).
-3. Copy and paste the code from [`lambda_function.py`](lambda_function.py).
-4. Attach an appropriate IAM Role.
-5. Set the trigger (e.g., schedule with CloudWatch Events to run daily/weekly).
+1. **Create a Lambda function** in AWS Console
+2. **Paste the relevant Python script** (`ebs_snapshot_cleanup_by_volume.py` or `ebs_snapshot_cleanup_by_time.py`)
+3. Attach an **IAM role** with the required permissions (see below)
+4. Optionally configure a **CloudWatch Event rule** to run it on a schedule (e.g., daily or weekly)
 
 ---
 
-## 🧠 Notes
+## 🔐 IAM Permissions
 
-- This script uses `boto3` to interact with the AWS EC2 service.
-- Make sure the Lambda has sufficient timeout and memory (recommended: 256MB+, 30s+).
-- Always test on a non-production environment before enabling in production.
+Both Lambda functions need the following permissions:
+
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "ec2:DescribeInstances",
+        "ec2:DescribeVolumes",
+        "ec2:DescribeSnapshots",
+        "ec2:DeleteSnapshot"
+      ],
+      "Resource": "*"
+    }
+  ]
+}
